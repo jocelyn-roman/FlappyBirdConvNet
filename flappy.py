@@ -19,7 +19,9 @@ for i in range(10):
         while True:
             action = env.action_space.sample()
             screen = env.render(mode='rgb_array')
-            ob, reward, done, _ = env.step(action)
+            ob, reward, done, b = env.step(action)
+            print(type(ob), type(reward), type(done), type(b))
+            print(ob, reward, done, b)
             if done:
                 plt.figure()
                 plt.imshow(screen)

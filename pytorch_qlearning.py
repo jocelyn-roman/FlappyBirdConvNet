@@ -248,12 +248,12 @@ def get_screen():
     return resize(screen).unsqueeze(0).to(device)
 
 
-def get_s():
+def get_s(img):
     env.render()
     screen = env.render(mode='rgb_array')  # transpose into torch order (CHW)
     # Strip off the bottom of the screen
     plt.figure()
-    plt.imshow(screen)
+    plt.imshow(img)
     plt.title('Example extracted screen')
     plt.show()
 
@@ -414,13 +414,14 @@ def optimize_model():
 num_episodes = 50
 for i_episode in range(num_episodes):
     # Initialize the environment and state
-    env.reset()
     last_screen = get_screen()
     current_screen = get_screen()
     state = current_screen - last_screen
     for t in count():
         # Select and perform an action
         action = select_action(state)
+
+        # ESTABA VIENDO ESTA VARIABLE ANTES DE REWARD!!
         _, reward, done, _ = env.step(action.item())
         reward = torch.tensor([reward], device=device)
 
