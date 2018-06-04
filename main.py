@@ -5,11 +5,15 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 import torchvision
 from torch.utils.data.sampler import SubsetRandomSampler
 # import torchvision.transforms as transforms
 # import torch.optim as optim
 from torchvision import transforms
+from itertools import count
+
+from torch.distributions import Categorical
 from statistics import mean, median
 from collections import Counter
 
@@ -18,6 +22,7 @@ from ple import PLE
 
 import matplotlib.pyplot as plt
 
+gamma = 0.99
 
 def visualize_image(x, title):
     # Based on: https://www.quora.com/How-can-l-visualize-cifar-10-data-RGB-using-python-matplotlib\
@@ -80,9 +85,71 @@ class Net(nn.Module):
         # Computes the fully connected layer (activation applied later)
         x = self.fc1(x)
 
-        return F.log_softmax(x, dim=1)
+        return F.softmax(x, dim=1)
 
 
+
+
+policy = Net()
+optimizer = optim.Adam(policy.parameters(), lr=1e-2)
+eps = np.finfo(np.float32).eps.item()
+
+
+def select_action(state):
+    state = torch.from_numpy(state).float().unsqueeze(0)
+    probs = policy(state)
+    m = Categorical(probs)
+    action = m.sample()
+    policy.saved_log_probs.append(m.log_prob(action))
+    return action.item()
+
+
+def finish_episode():
+    R = 0
+    policy_loss = []
+    rewards = []
+    for r in policy.rewards[::-1]:
+        R = r + gamma * R
+        rewards.insert(0, R)
+    rewards = torch.tensor(rewards)
+    rewards = (rewards - rewards.mean()) / (rewards.std() + eps)
+    for log_prob, reward in zip(policy.saved_log_probs, rewards):
+        policy_loss.append(-log_prob * reward)
+    optimizer.zero_grad()
+    policy_loss = torch.cat(policy_loss).sum()
+    policy_loss.backward()
+    optimizer.step()
+    del policy.rewards[:]
+    del policy.saved_log_probs[:]
+
+
+def main():
+    running_reward = 10
+    for i_episode in count(1):
+        state = p.reset_game()
+        for t in range(10000):  # Don't infinite loop while learning
+            action = select_action(state)
+            # state, reward, done, _ = env.step(action)
+            state, reward, done, _ = p.act(action)
+            if args.render:
+                env.render()
+            policy.rewards.append(reward)
+            if done:
+                break
+
+        running_reward = running_reward * 0.99 + t * 0.01
+        finish_episode()
+        if i_episode % args.log_interval == 0:
+            print('Episode {}\tLast length: {:5d}\tAverage length: {:.2f}'.format(
+                i_episode, t, running_reward))
+        if running_reward > env.spec.reward_threshold:
+            print("Solved! Running reward is now {} and "
+                  "the last episode runs to {} time steps!".format(running_reward, t))
+            break
+
+
+if __name__ == '__main__':
+                    main()
 def initial_population():
     training = []
     scores = []
