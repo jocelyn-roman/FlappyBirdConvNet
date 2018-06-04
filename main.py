@@ -31,6 +31,23 @@ def visualize_image(x, title):
     plt.show()
 
 
+def pre_processing(raw_image):
+    print(raw_image.shape)
+    print(raw_image)
+    print(np.min(raw_image))
+    limit = 80
+    raw_image[raw_image > limit] = 255
+    raw_image[raw_image <= limit] = 0
+    visualize_image(raw_image.T, "TEST")
+    return
+
+
+from PIL import Image
+im = Image.open('test2.png')
+im = im.convert('L')
+pre_processing(np.array(im))
+
+
 game = FlappyBird()
 
 p = PLE(game, fps=30, display_screen=True,
@@ -39,10 +56,10 @@ p = PLE(game, fps=30, display_screen=True,
             "positive": 1.0,
             "negative": -1.0,
             "tick": 1.0,
-            "loss": 0.0,
+            "loss": -5.0,
             "win": 5.0
         },
-        force_fps=True)
+        force_fps=False)
 
 p.init()
 initial_games = 1000
@@ -71,7 +88,7 @@ class Net(nn.Module):
         self.conv2_drop = nn.Dropout2d()
 
         # 128 input features, 2 output
-        self.fc1 = torch.nn.Linear(128, 2) # fully connected
+        self.fc1 = torch.nn.Linear(128, 2)  # fully connected
 
     def forward(self, x):
         # Computes the activation of the first convolution
@@ -160,13 +177,17 @@ def initial_population():
         game_memory = []
         prev_observation = []
         for _ in range(goal_steps):
+            # Este codigo se debe remplazar para evaluar con la red neuronal
             action = random.randrange(0, 10)
             observation = game.getGameState()
-            p.act(0)
+            a = p.act(0)
+            print(a)
             # Este codigo visualiza las imagenes de las iteraciones
             screen = p.getScreenGrayscale().T
             # visualize_image(screen, "TEST")
+            p. saveScreen("test.png")
             if action == 1:
+                # Action set: 119 or None
                 reward = p.act(119)
 
             if len(prev_observation) > 0:
