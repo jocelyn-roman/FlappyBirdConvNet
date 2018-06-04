@@ -110,6 +110,8 @@ class Net(nn.Module):
 policy = Net()
 optimizer = optim.Adam(policy.parameters(), lr=1e-2)
 eps = np.finfo(np.float32).eps.item()
+log_interval = 10
+render = True
 
 
 def select_action(state):
@@ -146,20 +148,20 @@ def main():
         state = p.reset_game()
         for t in range(10000):  # Don't infinite loop while learning
             action = select_action(state)
-            # state, reward, done, _ = env.step(action)
-            state, reward, done, _ = p.act(action)
-            if args.render:
-                env.render()
+            state, reward, done, _ = p.step(action)
+            #state, reward, done, _ = p.act(action)
+            if render:
+                p.render()
             policy.rewards.append(reward)
             if done:
                 break
 
         running_reward = running_reward * 0.99 + t * 0.01
         finish_episode()
-        if i_episode % args.log_interval == 0:
+        if i_episode % log_interval == 0:
             print('Episode {}\tLast length: {:5d}\tAverage length: {:.2f}'.format(
                 i_episode, t, running_reward))
-        if running_reward > env.spec.reward_threshold:
+        if running_reward >p.spec.reward_threshold:
             print("Solved! Running reward is now {} and "
                   "the last episode runs to {} time steps!".format(running_reward, t))
             break
