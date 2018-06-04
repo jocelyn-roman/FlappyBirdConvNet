@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 
 gamma = 0.99
 
+
 def visualize_image(x, title):
     # Based on: https://www.quora.com/How-can-l-visualize-cifar-10-data-RGB-using-python-matplotlib\
     plt.imshow(x, cmap='gray')
@@ -37,7 +38,9 @@ def pre_processing(raw_image):
     print(np.min(raw_image))
     limit = 80
     raw_image[raw_image > limit] = 255
-    raw_image[raw_image <= limit] = 0
+    raw_image[raw_image <= limit] = 1
+    raw_image[raw_image == 255] = 0
+    raw_image[raw_image == 1] = 255
     visualize_image(raw_image.T, "TEST")
     return
 
