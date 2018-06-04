@@ -1,16 +1,12 @@
-# import gym
-# import pygame
 import random
+
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import torchvision
-from torch.utils.data.sampler import SubsetRandomSampler
-# import torchvision.transforms as transforms
-# import torch.optim as optim
-from torchvision import transforms
+
 from itertools import count
 
 from torch.distributions import Categorical
@@ -34,13 +30,12 @@ def visualize_image(x, title):
 
 def pre_processing(raw_image):
     print(raw_image.shape)
-    print(raw_image)
-    print(np.min(raw_image))
     limit = 80
     raw_image[raw_image > limit] = 255
     raw_image[raw_image <= limit] = 1
     raw_image[raw_image == 255] = 0
     raw_image[raw_image == 1] = 255
+    raw_image = np.delete(raw_image, range(404, 512), 1)
     visualize_image(raw_image.T, "TEST")
     return
 
@@ -171,7 +166,9 @@ def main():
 
 
 if __name__ == '__main__':
-                    main()
+    pass
+                    # main()
+
 def initial_population():
     training = []
     scores = []
