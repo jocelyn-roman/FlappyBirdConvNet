@@ -15,6 +15,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+for i in range(10):
+        ob = env.reset()
+        while True:
+            action = env.action_space.sample()
+            screen = env.render(mode='rgb_array')
+            ob, reward, done, b = env.step(action)
+            print(type(ob), type(reward), type(done), type(b))
+            print(ob, reward, done, b)
+            if done:
+                plt.figure()
+                plt.imshow(screen)
+                plt.title('Example extracted screen')
+                plt.show()
+                break
 from itertools import count
 
 from torch.distributions import Categorical
