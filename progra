@@ -47,14 +47,14 @@ def pre_processing(raw_image):
     # Delete floor
     raw_image = np.delete(raw_image, range(404, 512), 1)
     print(raw_image.shape)
-    visualize_image(raw_image, "TEST")
 
     return raw_image
 
 def preprocessing(raw_image):
     imgData = np.asarray(raw_image)
     thresholdedData = (imgData > 200) * 1.0
-    visualize_image(raw_image, "TEST")
+    #visualize_image(raw_image, "TEST")
+    return thresholdedData
 
 
 
@@ -91,6 +91,7 @@ eps = np.finfo(np.float32).eps.item()
 
 def select_action(state):
     state = state.transpose((2, 0, 1))
+    #state = preprocessing(state)
     state = torch.from_numpy(state).float().unsqueeze(0)
     probs = policy(state)
     m = Categorical(probs)
